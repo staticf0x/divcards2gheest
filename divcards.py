@@ -1,52 +1,24 @@
-import base64
-import hashlib
 import json
-import random
 import time
 import urllib
-import uuid
-import webbrowser
 
 import requests
-from flask import Flask, request
+from flask import Flask, redirect, render_template, request, send_from_directory
 
-app = Flask(__name__)
+from divcards.api import PoEApi
+from divcards.utils import generate_oath_url, token_valid
+
+app = Flask("divcards")
 code_verifier = None
 state = None
-
-
-def base64_url_encode(value: bytes) -> str:
-    return base64.b64encode(value).decode("ascii").replace("+", "-").replace("/", "_").rstrip("=")
-
-
-def generate_oath_url():
-    secret = random.randbytes(32)
-    code_verifier = base64_url_encode(secret)
-    code_challenge = base64_url_encode(hashlib.sha256(code_verifier.encode("ascii")).digest())
-    state = str(uuid.uuid4())
-
-    params = {
-        "client_id": "divcards2gsheet",
-        "response_type": "code",
-        "scope": "account:stashes",
-        "state": state,
-        "redirect_uri": urllib.parse.quote_plus("http://localhost:8080/callback"),
-        "code_challenge": code_challenge,
-        "code_challenge_method": "S256",
-    }
-
-    params_str = "&".join(f"{k}={v}" for k, v in params.items())
-
-    oauth_url = f"https://www.pathofexile.com/oauth/authorize?{params_str}"
-
-    webbrowser.open_new_tab(oauth_url)
-
-    return code_verifier, state
 
 
 @app.get("/callback")
 def callback():
     global code_verifier, state
+
+    if token_valid():
+        return redirect("/divcards")
 
     code = request.args.get("code")
     state_check = request.args.get("state")
@@ -82,10 +54,36 @@ def callback():
             fwrite,
         )
 
-    return "Success"
+    return redirect("/divcards")
+
+
+@app.route("/static/<path:path>")
+def static_files(path: str):
+    return send_from_directory("static", path)
+
+
+@app.get("/divcards")
+def list_stashes():
+    api = PoEApi()
+
+    stashes = api.stashes()
+
+    return render_template("divcards.html", stashes=stashes)
+
+
+@app.get("/divcards/<stash_id>")
+def show_stash(stash_id: str):
+    api = PoEApi()
+
+    stash = api.stash(stash_id)
+    items = [(item["typeLine"], item["stackSize"]) for item in stash["items"]]
+    items = sorted(items, key=lambda x: x[1], reverse=True)
+
+    return render_template("stash.html", items=items)
 
 
 if __name__ == "__main__":
-    code_verifier, state = generate_oath_url()
+    if not token_valid():
+        code_verifier, state = generate_oath_url()
 
     app.run(port=8080)

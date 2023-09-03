@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title">Your divcard stashes</h1>
+        <h2 class="subtitle">Click on the one you want to load</h2>
+
+        <div class="content">
+            <ul>
+            {% for stash in stashes %}
+                <li><a href="/divcards/{{ stash.id }}">{{ stash.name }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock content %}
