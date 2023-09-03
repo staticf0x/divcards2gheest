@@ -1,5 +1,3 @@
-import tomllib
-
 import requests
 
 from divcards.auth import BearerAuth
@@ -26,7 +24,16 @@ class PoEApi:
         res = self.get("/stash/standard")
         stashes = res.json()["stashes"]
 
-        return stashes
+        out = []
+
+        for stash in stashes:
+            if children := stash.get("children", []):
+                for child in children:
+                    out.append(child)
+            else:
+                out.append(stash)
+
+        return out
 
     def stash(self, stash_id: str):
         res = self.get(f"/stash/standard/{stash_id}")
