@@ -1,12 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
+<script>
+function copy_to_clipboard() {
+    var table = document.getElementById("cards");
+    navigator.clipboard.writeText(table.innerText.trim());
+
+    var copy_btn = document.getElementById("copy-button");
+    copy_btn.textContent = "Copied!";
+
+    setTimeout(function () {
+        var copy_btn = document.getElementById("copy-button");
+        copy_btn.textContent = "Copy";
+    }, 3000);
+}
+</script>
+
 <section class="section">
     <div class="container">
         <h1 class="title">Stash contents</h1>
         <h2 class="subtitle">You can copy-paste the table into a Google sheet now</h2>
 
+        <button id="copy-button" class="button is-light is-small is-pulled-right mb-1" onClick="copy_to_clipboard();">Copy</button>
+
         <div class="content">
-            <table class="table is-bordered is-narrow is-hoverable">
+            <table id="cards" class="table is-bordered is-narrow is-hoverable">
                 <thead>
                     <tr>
                         <th>Card</th>
