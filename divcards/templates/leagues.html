@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title">Choose league</h1>
+
+        <div class="content">
+            <ul>
+            {% for league in leagues %}
+                <li><a href="/divcards/{{ league }}">{{ league }}</a></li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock content %}

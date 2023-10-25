@@ -63,23 +63,34 @@ def static_files(path: str):
 
 
 @app.get("/divcards")
-def list_stashes():
+def list_leagues():
+    return render_template("leagues.html", leagues=["standard", "ancestor"])
+
+
+@app.get("/divcards/<league>")
+def list_stashes(league: str):
     api = PoEApi()
 
-    stashes = api.stashes()
+    stashes = api.stashes(league)
 
-    return render_template("divcards.html", stashes=stashes)
+    return render_template("divcards.html", stashes=stashes, league=league)
 
 
-@app.get("/divcards/<stash_id>")
-def show_stash(stash_id: str):
+@app.get("/divcards/<league>/<stash_id>")
+def show_stash(league: str, stash_id: str):
     api = PoEApi()
 
-    stash = api.stash(stash_id)
-    items = [(item["typeLine"], item.get("stackSize", 1)) for item in stash["items"]]
-    items = sorted(items, key=lambda x: x[1], reverse=True)
+    stash = api.stash(league, stash_id)
 
-    return render_template("stash.html", items=items)
+    items = {}
+
+    for item in stash["items"]:
+        items.setdefault(item["typeLine"], 0)
+        items[item["typeLine"]] += item.get("stackSize", 1)
+
+    items = [(k, items[k]) for k in sorted(items, key=items.get, reverse=True)]
+
+    return render_template("stash.html", items=items, league=league)
 
 
 if __name__ == "__main__":

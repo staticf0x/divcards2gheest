@@ -20,8 +20,8 @@ class PoEApi:
 
         return requests.get(f"{self.url}{url}", headers=self.headers, auth=self.auth)
 
-    def stashes(self):
-        res = self.get("/stash/standard")
+    def stashes(self, league: str):
+        res = self.get(f"/stash/{league}")
         stashes = res.json()["stashes"]
 
         out = []
@@ -35,7 +35,7 @@ class PoEApi:
 
         return out
 
-    def stash(self, stash_id: str):
-        res = self.get(f"/stash/standard/{stash_id}")
+    def stash(self, league: str, stash_id: str):
+        res = self.get(f"/stash/{league}/{stash_id}")
 
         return res.json()["stash"]
