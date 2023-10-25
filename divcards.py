@@ -76,7 +76,7 @@ def show_stash(stash_id: str):
     api = PoEApi()
 
     stash = api.stash(stash_id)
-    items = [(item["typeLine"], item["stackSize"]) for item in stash["items"]]
+    items = [(item["typeLine"], item.get("stackSize", 1)) for item in stash["items"]]
     items = sorted(items, key=lambda x: x[1], reverse=True)
 
     return render_template("stash.html", items=items)
