@@ -64,7 +64,7 @@ def static_files(path: str):
 
 @app.get("/divcards")
 def list_leagues():
-    return render_template("leagues.html", leagues=["standard", "ancestor"])
+    return render_template("leagues.html", leagues=["standard", "necropolis"])
 
 
 @app.get("/divcards/<league>")
