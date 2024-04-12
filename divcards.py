@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 import urllib
@@ -76,6 +77,20 @@ def list_stashes(league: str):
     return render_template("divcards.html", stashes=stashes, league=league)
 
 
+@app.get("/divcards/<league>/<stash_id>/snapshot")
+def snapshot_stash(league: str, stash_id: str):
+    api = PoEApi()
+
+    stash = api.stash(league, stash_id)
+
+    dt = datetime.datetime.now().strftime("%y-%m-%d-%H-%M-%S")
+
+    with open(f"snapshot-{stash_id}-{dt}.json", "w") as f:
+        json.dump(stash, f)
+
+    return redirect(f"/divcards/{league}/{stash_id}")
+
+
 @app.get("/divcards/<league>/<stash_id>")
 def show_stash(league: str, stash_id: str):
     api = PoEApi()
@@ -90,7 +105,12 @@ def show_stash(league: str, stash_id: str):
 
     items = [(k, items[k]) for k in sorted(items, key=items.get, reverse=True)]
 
-    return render_template("stash.html", items=items, league=league)
+    return render_template(
+        "stash.html",
+        items=items,
+        league=league,
+        stash_id=stash_id,
+    )
 
 
 if __name__ == "__main__":
